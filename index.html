@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>地下芸練習 - オタ芸練習アプリ</title>
+<meta name="description" content="YouTube / X の地下芸動画で練習する。反転・スロー・ABループ・区間マーカー・カメラチェック。データは端末内のみ。">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<style>
+:root{--bg:#0e0f13;--card:#171a21;--card2:#1f232e;--line:#2b303e;--txt:#f2f3f5;--sub:#a7adba;--acc:#ffd60a;--acc2:#ff375f;--ok:#30d158;--radius:14px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;-webkit-tap-highlight-color:transparent}
+header{position:sticky;top:0;z-index:20;background:rgba(14,15,19,.92);backdrop-filter:blur(10px);padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+header h1{font-size:18px;margin:0}
+header .badge{font-size:11px;background:var(--acc);color:#111;padding:3px 8px;border-radius:999px;font-weight:700}
+main{max-width:900px;margin:0 auto;padding:14px 14px 40px;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+.card h2{font-size:15px;margin:0 0 10px}
+.card h2 small{color:var(--sub);font-weight:400;font-size:12px}
+label{font-size:12px;color:var(--sub);display:block;margin:10px 0 4px}
+input[type=text],input[type=url],input[type=number],select,textarea{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:11px;font-size:16px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>*{flex:1}
+button{appearance:none;border:1px solid var(--line);background:var(--card2);color:var(--txt);border-radius:10px;padding:10px 12px;font-size:14px;font-weight:600;cursor:pointer}
+button:active{transform:scale(.97)}
+button.primary{background:var(--acc);color:#111;border-color:var(--acc)}
+button.danger{background:transparent;color:#ff6b81;border-color:#5a2733}
+button.active{background:var(--acc);color:#111;border-color:var(--acc)}
+button.small{padding:7px 10px;font-size:13px}
+button:disabled{opacity:.4}
+.stageWrap{position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:16/9;width:100%}
+.stageInner{position:absolute;inset:0;transform-origin:center center}
+.stageInner iframe,.stageInner video{width:100%;height:100%;border:0;display:block;object-fit:contain;background:#000}
+#xWrap{position:absolute;inset:0;overflow:auto;display:flex;justify-content:center;align-items:flex-start;background:#000}
+#xWrap blockquote{margin:0}
+.countOverlay{position:absolute;top:8px;right:10px;z-index:5;background:rgba(0,0,0,.65);border:1px solid var(--line);padding:6px 12px;border-radius:999px;font-size:22px;font-weight:800;display:none;min-width:74px;text-align:center}
+.countOverlay.on{display:block}
+.countOverlay b{color:var(--acc)}
+.seekRow{display:flex;align-items:center;gap:8px;margin-top:10px}
+.seekRow input[type=range]{flex:1;accent-color:var(--acc)}
+.time{font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums;white-space:nowrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{font-size:12px;padding:5px 9px;border-radius:999px;background:var(--card2);border:1px solid var(--line);color:var(--sub)}
+.chip.on{color:#111;background:var(--acc);border-color:var(--acc);font-weight:700}
+.note{font-size:12px;color:var(--sub);line-height:1.6}
+.note.warn{color:#ffb3c0;background:rgba(255,55,95,.08);border:1px solid rgba(255,55,95,.3);padding:10px;border-radius:10px}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;gap:10px;align-items:center}
+.item .meta{flex:1;min-width:0}
+.item .meta .t{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .meta .s{font-size:12px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag{font-size:10px;font-weight:800;padding:2px 6px;border-radius:6px;vertical-align:2px}
+.tag.yt{background:#ff0033;color:#fff}.tag.x{background:#e7e9ea;color:#111}.tag.file{background:var(--ok);color:#111}
+.camWrap{position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:16/9;width:100%}
+.camWrap video{width:100%;height:100%;object-fit:cover;display:block;background:#000}
+.camWrap video.mirror{transform:scaleX(-1)}
+.pip{position:absolute;right:8px;bottom:8px;width:44%;aspect-ratio:16/9;border:2px solid var(--acc);border-radius:10px;overflow:hidden;background:#000;z-index:4;display:none}
+.pip.on{display:block}
+.pip .stageInner{position:absolute;inset:0}
+.recDot{display:none;align-items:center;gap:6px;font-size:13px;color:#ff6b81;font-weight:700}
+.recDot.on{display:flex}
+.recDot i{width:10px;height:10px;border-radius:50%;background:#ff375f;display:block;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.2}}
+a{color:var(--acc)}
+details summary{cursor:pointer;font-weight:700;font-size:14px}
+.kbd{font-size:11px;background:#000;border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+footer{color:var(--sub);font-size:11px;text-align:center;padding:0 16px 24px;line-height:1.7}
+</style>
+</head>
+<body>
+<header><span style="font-size:22px">⚡</span><h1>地下芸練習</h1><span class="badge">自分専用・非公開</span></header>
+<main>
+
+<section class="card">
+  <h2>お手本動画を読み込む <small>YouTube / X / 手持ち動画ファイル</small></h2>
+  <label>URL（YouTube・Xのポスト）</label>
+  <input type="url" id="urlInput" placeholder="https://www.youtube.com/watch?v=... / https://x.com/.../status/...">
+  <div class="row" style="margin-top:8px">
+    <button class="primary" id="loadBtn">▶ 読み込む</button>
+    <button id="pasteBtn">ペースト</button>
+  </div>
+  <label>…または動画ファイルから（スロー/ループ全部使えます）</label>
+  <input type="file" id="fileInput" accept="video/*">
+  <div class="row">
+    <div><label>曲名</label><input type="text" id="songInput" placeholder="例：〇〇（曲名）"></div>
+    <div><label>グループ名</label><input type="text" id="groupInput" placeholder="例：〇〇（アイドル名）"></div>
+  </div>
+  <label>メモ（技名・ポイントなど）</label>
+  <input type="text" id="memoInput" placeholder="例：落ちサビの入り方、右の人の動き">
+  <button id="saveBtn" style="width:100%;margin-top:10px">今の動画の曲名・メモを履歴に反映</button>
+  <p class="note" style="margin-top:6px">✅ <b>1回読み込んだ動画は自動で下の履歴に保存されます</b>（この端末のブラウザ内だけ・外部送信なし）。次からは履歴をタップするだけ。保存ボタンを押さなくてOKで、曲名やメモは後から付けても履歴側に反映されます。</p>
+  <p class="note" style="margin-top:10px">探す：
+    <a href="https://www.youtube.com/results?search_query=%E5%9C%B0%E4%B8%8B%E8%8A%B8+%E3%83%B2%E3%82%BF%E8%8A%B8" target="_blank" rel="noopener">YouTubeで「地下芸」検索</a> /
+    <a href="https://x.com/search?q=VideoStar%20%E3%82%AA%E3%82%BF%E8%8A%B8%E9%83%A8%20filter%3Avideos&src=typed_query&f=live" target="_blank" rel="noopener">Xで「VideoStar オタ芸部」動画検索</a>
+    → 良い動画のURLをコピーして上に貼るだけ。</p>
+</section>
+
+<section class="card">
+  <h2>お手本プレイヤー</h2>
+  <div class="stageWrap" id="mainStage">
+    <div class="stageInner" id="stageInner">
+      <div id="ytWrap" style="position:absolute;inset:0;display:none"></div>
+      <div id="xWrap" style="display:none"></div>
+      <video id="fileVideo" style="display:none" controls playsinline></video>
+      <div id="emptyMsg" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--sub);font-size:14px;padding:20px;text-align:center">上の欄に YouTube / X のURLを貼って「読み込む」を押してね</div>
+    </div>
+    <div class="countOverlay" id="countOverlay"><b>1</b> / 8</div>
+  </div>
+
+  <div id="xNote" class="note warn" style="display:none;margin-top:10px">
+    ⚠️ <b>X動画の制限（公式埋め込みの仕様）</b>：Xは外部から再生操作するAPIを出していないので、このアプリから <b>スロー・ABループ・シークはできません</b>（再生/停止は動画の真ん中タップ）。反転とズーム、カメラへの重ね表示は効きます。細かく繰り返したい区間は、元ポストを開くか、YouTube版/手持ちファイルで練習するのが確実です。
+    <div style="margin-top:6px"><button class="small" id="openXBtn">元のポストをXで開く ↗</button></div>
+  </div>
+
+  <div class="seekRow" id="seekRow">
+    <span class="time" id="curTime">0:00</span>
+    <input type="range" id="seekBar" min="0" max="1000" value="0">
+    <span class="time" id="durTime">0:00</span>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <button id="playBtn">▶ 再生 / 停止</button>
+    <button id="back5Btn">-5秒</button>
+    <button id="fwd5Btn">+5秒</button>
+    <button id="frameBackBtn">◀ コマ</button>
+    <button id="frameFwdBtn">コマ ▶</button>
+  </div>
+
+  <label>速度（YouTube / ファイルのみ）</label>
+  <div class="chips" id="speedChips">
+    <span class="chip" data-speed="0.25">0.25x</span><span class="chip" data-speed="0.5">0.5x</span><span class="chip" data-speed="0.75">0.75x</span><span class="chip on" data-speed="1">1x</span><span class="chip" data-speed="1.25">1.25x</span><span class="chip" data-speed="1.5">1.5x</span>
+  </div>
+
+  <label>表示</label>
+  <div class="row">
+    <button id="mirrorBtn">↔ 左右反転</button>
+    <div style="display:flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:0 10px">
+      <span style="font-size:13px;white-space:nowrap">ズーム</span>
+      <input type="range" id="zoomRange" min="1" max="2.2" step="0.05" value="1" style="flex:1;accent-color:var(--acc)">
+    </div>
+  </div>
+  <p class="note">ズームは「真ん中の人だけ大きく見たい」地下芸動画用。反転は背面から撮られた動画を、自分の向きに合わせる時に。</p>
+
+  <label>ABループ（YouTube / ファイルのみ）</label>
+  <div class="row">
+    <button id="setABtn">Aを置く <span id="aVal"></span></button>
+    <button id="setBBtn">Bを置く <span id="bVal"></span></button>
+    <button id="clearABBtn">解除</button>
+  </div>
+
+  <label>区間マーカー（曲の展開で区切る）</label>
+  <div class="row">
+    <select id="markerLabel">
+      <option>イントロ</option><option>Aメロ</option><option>Bメロ</option><option>サビ</option><option>落ちサビ</option><option>間奏</option><option>アウトロ</option><option>技ポイント</option>
+    </select>
+    <button id="addMarkerBtn">＋ 今の位置に追加</button>
+  </div>
+  <div class="list" id="markerList" style="margin-top:8px"></div>
+</section>
+
+<section class="card">
+  <h2>カウント <small>曲に合わせて身体を入れる練習</small></h2>
+  <div class="row">
+    <div><label>BPM</label><input type="number" id="bpmInput" value="160" min="40" max="260"></div>
+    <div><label>音</label><select id="clickSelect"><option value="1">クリックあり</option><option value="0">無音（表示だけ）</option></select></div>
+  </div>
+  <button class="primary" id="countBtn" style="width:100%;margin-top:10px">カウント開始</button>
+  <p class="note">プレイヤー右上に 1〜8 が曲のテンポで回ります。地下芸は「入るタイミング」が命なので、サビ頭を1に合わせると合わせやすい。</p>
+</section>
+
+<section class="card">
+  <h2>カメラで自分の動きチェック <small>全身・姿勢・タイミング</small></h2>
+  <div class="camWrap">
+    <video id="camVideo" autoplay playsinline muted></video>
+    <div class="pip" id="pipBox"><div class="stageInner" id="pipInner"></div></div>
+    <div class="countOverlay" id="countOverlay2"><b>1</b> / 8</div>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <button class="primary" id="camBtn">📷 カメラ開始</button>
+    <button id="camMirrorBtn" class="active">鏡表示 ON</button>
+    <button id="pipBtn">お手本を重ねる</button>
+  </div>
+  <div class="row" style="margin-top:8px;align-items:center">
+    <button id="recBtn" disabled>● 録画開始</button>
+    <span class="recDot" id="recDot"><i></i>録画中 <span id="recTime">0:00</span></span>
+  </div>
+  <div id="recResult" style="margin-top:10px;display:none">
+    <label>録画した自分（お手本と見比べてね）</label>
+    <video id="recVideo" controls playsinline style="width:100%;border-radius:10px;background:#000"></video>
+    <a id="recDownload" download="otagei-practice.webm" style="display:inline-block;margin-top:6px">⬇ 録画を保存</a>
+  </div>
+  <p class="note">カメラ映像は端末内だけ・外部送信なし。iPhoneは HTTPS（非公開の置き場）か Macのローカル起動で開いた時にカメラが使えます。公開用には作っていません。ファイル直開きだとブラウザがカメラを止めることがあります。</p>
+</section>
+
+<section class="card">
+  <h2>履歴・ライブラリ <small>1回使ったら自動保存 / 曲名・グループで管理（端末内のみ）</small></h2>
+  <input type="text" id="filterInput" placeholder="🔍 曲名・グループ名・メモで絞り込み">
+  <div class="list" id="libraryList" style="margin-top:10px"></div>
+</section>
+
+<section class="card">
+  <details>
+    <summary>使い方のコツ（地下芸想定）</summary>
+    <p class="note" style="margin-top:8px;line-height:1.9">
+      1. Xの VideoStar オタ芸部とか、YouTubeの地下芸動画のURLを貼る<br>
+      2. 曲名とグループ名を付けてライブラリ保存 → 次からワンタップ<br>
+      3. YouTube/ファイルなら サビにマーカー → A=サビ頭・B=サビ終わりで ABループ + 0.5x<br>
+      4. 覚えたら 1x に戻して、カメラ+お手本PiPで自分の全身とタイミングをチェック<br>
+      5. 現場は狭いので、家では「その場で収まる幅」もカメラで確認すると本番でぶつからない
+    </p>
+  </details>
+</section>
+</main>
+<footer>地下芸練習・自分専用 ・ 公開/共有機能なし ・ データはすべてこの端末の localStorage のみ ・ YouTubeは公式IFrame API、Xは公式埋め込み(widgets.js)を使用</footer>
+<script src="https://www.youtube.com/iframe_api"></script>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const LIB_KEY="otagei_library_v1", MARK_KEY="otagei_markers_v1";
+let mode=null; // 'yt' | 'x' | 'file'
+let currentUrl="", currentVideoKey="";
+let ytPlayer=null, ytReady=false, pendingYtId=null;
+let loopA=null, loopB=null, mirror=false, zoom=1;
+let markers=JSON.parse(localStorage.getItem(MARK_KEY)||"{}");
+let library=JSON.parse(localStorage.getItem(LIB_KEY)||"[]");
+
+function fmt(t){if(!isFinite(t)||t<0)t=0;const m=Math.floor(t/60),s=Math.floor(t%60);return m+":"+String(s).padStart(2,"0")}
+function parseYouTube(u){const m=u.match(/(?:youtube\.com\/(?:watch\?[^#]*v=|shorts\/|live\/|embed\/)|youtu\.be\/)([\w-]{6,})/);return m?m[1]:null}
+function parseX(u){const m=u.match(/(?:x\.com|twitter\.com)\/[^/]+\/status\/(\d+)/);return m?m[1]:null}
+function applyTransform(){$("#stageInner").style.transform=`scaleX(${mirror?-1:1}) scale(${zoom})`;const p=$("#pipInner");if(p)p.style.transform=`scaleX(${mirror?-1:1}) scale(${zoom})`}
+$("#mirrorBtn").onclick=()=>{mirror=!mirror;$("#mirrorBtn").classList.toggle("active",mirror);applyTransform()};
+$("#zoomRange").oninput=e=>{zoom=parseFloat(e.target.value);applyTransform()};
+
+// ---- YouTube ----
+window.onYouTubeIframeAPIReady=()=>{ytReady=true;if(pendingYtId){createYt(pendingYtId);pendingYtId=null}};
+function createYt(id){
+  $("#ytWrap").style.display="block";$("#xWrap").style.display="none";$("#fileVideo").style.display="none";$("#emptyMsg").style.display="none";$("#xNote").style.display="none";
+  if(ytPlayer&&ytPlayer.loadVideoById){ytPlayer.loadVideoById(id);return}
+  ytPlayer=new YT.Player("ytWrap",{videoId:id,width:"100%",height:"100%",playerVars:{playsinline:1,rel:0},events:{onReady:()=>{ytPlayer.setPlaybackRate(currentRate)}}});
+}
+function loadUrl(raw){
+  const u=(raw||"").trim();if(!u){alert("URLを貼ってね");return}
+  currentUrl=u;loopA=loopB=null;updateABLabels();
+  const yt=parseYouTube(u), x=parseX(u);
+  if(yt){mode="yt";currentVideoKey="yt:"+yt;if(ytReady)createYt(yt);else pendingYtId=yt}
+  else if(x){mode="x";currentVideoKey="x:"+x;loadX(x,u)}
+  else{alert("YouTube か X のポストURLとして読めなかったよ。URLを確認してね");return}
+  upsertHistory(u);
+  renderMarkers();
+}
+function loadX(id,url){
+  $("#ytWrap").style.display="none";$("#fileVideo").style.display="none";$("#emptyMsg").style.display="none";$("#xWrap").style.display="flex";$("#xNote").style.display="block";
+  const wrap=$("#xWrap");wrap.innerHTML="";
+  const holder=document.createElement("div");holder.style.width="100%";wrap.appendChild(holder);
+  const render=()=>{if(window.twttr&&twttr.widgets){twttr.widgets.createTweet(id,holder,{theme:"dark",conversation:"none",cards:"visible",dnt:true}).then(el=>{if(!el){holder.innerHTML='<p style="color:#a7adba;padding:16px;font-size:13px">埋め込みが表示できませんでした（削除/非公開の可能性）。下のボタンからXで開いてね。</p>'}})}else{setTimeout(render,400)}};
+  render();
+  $("#openXBtn").onclick=()=>window.open(url,"_blank");
+}
+$("#loadBtn").onclick=()=>loadUrl($("#urlInput").value);
+$("#pasteBtn").onclick=async()=>{try{$("#urlInput").value=await navigator.clipboard.readText()}catch(e){alert("ペーストできなかった。長押しで貼ってね")}};
+$("#fileInput").onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  mode="file";currentUrl="";currentVideoKey="file:"+f.name+":"+f.size;loopA=loopB=null;updateABLabels();
+  $("#ytWrap").style.display="none";$("#xWrap").style.display="none";$("#xNote").style.display="none";$("#emptyMsg").style.display="none";
+  const v=$("#fileVideo");v.style.display="block";v.src=URL.createObjectURL(f);v.playbackRate=currentRate;renderMarkers();
+};
+
+// ---- Playback controls (YT / file) ----
+let currentRate=1;
+function getTime(){if(mode==="yt"&&ytPlayer&&ytPlayer.getCurrentTime)return ytPlayer.getCurrentTime();if(mode==="file")return $("#fileVideo").currentTime;return 0}
+function getDur(){if(mode==="yt"&&ytPlayer&&ytPlayer.getDuration)return ytPlayer.getDuration()||0;if(mode==="file")return $("#fileVideo").duration||0;return 0}
+function seekTo(t){if(mode==="yt"&&ytPlayer)ytPlayer.seekTo(t,true);else if(mode==="file")$("#fileVideo").currentTime=t}
+function togglePlay(){
+  if(mode==="yt"&&ytPlayer){const st=ytPlayer.getPlayerState();if(st===1)ytPlayer.pauseVideo();else ytPlayer.playVideo()}
+  else if(mode==="file"){const v=$("#fileVideo");v.paused?v.play():v.pause()}
+  else if(mode==="x"){alert("X動画の再生/停止は、動画の真ん中をタップしてね（公式仕様）")}
+}
+$("#playBtn").onclick=togglePlay;
+$("#back5Btn").onclick=()=>seekTo(Math.max(0,getTime()-5));
+$("#fwd5Btn").onclick=()=>seekTo(getTime()+5);
+$("#frameBackBtn").onclick=()=>{if(mode==="yt"&&ytPlayer)ytPlayer.pauseVideo();if(mode==="file")$("#fileVideo").pause();seekTo(Math.max(0,getTime()-1/30))};
+$("#frameFwdBtn").onclick=()=>{if(mode==="yt"&&ytPlayer)ytPlayer.pauseVideo();if(mode==="file")$("#fileVideo").pause();seekTo(getTime()+1/30)};
+$("#seekBar").oninput=e=>{const d=getDur();if(d)seekTo(d*e.target.value/1000)};
+document.querySelectorAll("#speedChips .chip").forEach(c=>c.onclick=()=>{
+  document.querySelectorAll("#speedChips .chip").forEach(x=>x.classList.remove("on"));c.classList.add("on");
+  currentRate=parseFloat(c.dataset.speed);
+  if(mode==="yt"&&ytPlayer)ytPlayer.setPlaybackRate(currentRate);
+  if(mode==="file")$("#fileVideo").playbackRate=currentRate;
+  if(mode==="x")alert("X動画には速度変更は効きません（公式仕様）。YouTube/ファイルで使ってね");
+});
+setInterval(()=>{
+  const d=getDur(),t=getTime();
+  if(d){$("#seekBar").value=Math.round(t/d*1000);$("#durTime").textContent=fmt(d)}
+  $("#curTime").textContent=fmt(t);
+  if(loopA!==null&&loopB!==null&&t>=loopB)seekTo(loopA);
+},250);
+
+// ---- AB loop ----
+function updateABLabels(){$("#aVal").textContent=loopA!==null?"("+fmt(loopA)+")":"";$("#bVal").textContent=loopB!==null?"("+fmt(loopB)+")":"";$("#setABtn").classList.toggle("active",loopA!==null);$("#setBBtn").classList.toggle("active",loopB!==null)}
+$("#setABtn").onclick=()=>{loopA=getTime();if(loopB!==null&&loopB<=loopA)loopB=null;updateABLabels()};
+$("#setBBtn").onclick=()=>{loopB=getTime();if(loopA===null)loopA=0;updateABLabels()};
+$("#clearABBtn").onclick=()=>{loopA=loopB=null;updateABLabels()};
+
+// ---- Markers ----
+function renderMarkers(){
+  const list=$("#markerList");list.innerHTML="";
+  const arr=(markers[currentVideoKey]||[]).slice().sort((a,b)=>a.t-b.t);
+  if(!arr.length){list.innerHTML='<p class="note">まだマーカーなし。曲の展開（サビ頭など）で置くと練習が速い。</p>';return}
+  arr.forEach((mk,i)=>{
+    const div=document.createElement("div");div.className="item";
+    div.innerHTML=`<div class="meta"><div class="t">${mk.label} <span class="time">${fmt(mk.t)}</span></div></div>`;
+    const go=document.createElement("button");go.className="small";go.textContent="▶ ここから";go.onclick=()=>seekTo(mk.t);
+    const del=document.createElement("button");del.className="small danger";del.textContent="削除";del.onclick=()=>{markers[currentVideoKey].splice(markers[currentVideoKey].indexOf(mk),1);localStorage.setItem(MARK_KEY,JSON.stringify(markers));renderMarkers()};
+    div.appendChild(go);div.appendChild(del);list.appendChild(div);
+  });
+}
+$("#addMarkerBtn").onclick=()=>{
+  if(!currentVideoKey){alert("先に動画を読み込んでね");return}
+  if(mode==="x"){alert("X動画は時刻を取得できないのでマーカーは置けません（公式仕様）");return}
+  (markers[currentVideoKey]=markers[currentVideoKey]||[]).push({t:getTime(),label:$("#markerLabel").value});
+  localStorage.setItem(MARK_KEY,JSON.stringify(markers));renderMarkers();
+};
+
+// ---- Count / metronome ----
+let countTimer=null,countBeat=0,audioCtx=null;
+function click(high){
+  if($("#clickSelect").value!=="1")return;
+  try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=high?1560:880;g.gain.value=.12;
+    o.connect(g);g.connect(audioCtx.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.07);o.stop(audioCtx.currentTime+.08)}catch(e){}
+}
+$("#countBtn").onclick=()=>{
+  if(countTimer){clearInterval(countTimer);countTimer=null;$("#countBtn").textContent="カウント開始";$("#countBtn").classList.add("primary");$("#countOverlay").classList.remove("on");$("#countOverlay2").classList.remove("on");return}
+  const bpm=parseFloat($("#bpmInput").value)||160;countBeat=0;
+  $("#countOverlay").classList.add("on");$("#countOverlay2").classList.add("on");
+  const tick=()=>{countBeat=countBeat%8+1;$("#countOverlay").innerHTML=`<b>${countBeat}</b> / 8`;$("#countOverlay2").innerHTML=`<b>${countBeat}</b> / 8`;click(countBeat===1)};
+  tick();countTimer=setInterval(tick,60000/bpm);
+  $("#countBtn").textContent="カウント停止";$("#countBtn").classList.remove("primary");
+};
+
+// ---- Camera / PiP / Recording ----
+let camStream=null,recorder=null,recChunks=[],recStart=0,recTimer=null;
+$("#camBtn").onclick=async()=>{
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;$("#camVideo").srcObject=null;$("#camBtn").textContent="📷 カメラ開始";$("#recBtn").disabled=true;return}
+  try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"},audio:false});
+    $("#camVideo").srcObject=camStream;$("#camBtn").textContent="カメラ停止";$("#recBtn").disabled=false;
+  }catch(e){alert("カメラが使えませんでした。HTTPSで開いているか、ブラウザの許可を確認してね。")}
+};
+$("#camMirrorBtn").onclick=()=>{const v=$("#camVideo");v.classList.toggle("mirror");$("#camMirrorBtn").textContent=v.classList.contains("mirror")?"鏡表示 ON":"鏡表示 OFF";$("#camMirrorBtn").classList.toggle("active",v.classList.contains("mirror"))};
+$("#camVideo").classList.add("mirror");
+let pipOn=false,stageHome=null;
+$("#pipBtn").onclick=()=>{
+  pipOn=!pipOn;$("#pipBtn").classList.toggle("active",pipOn);$("#pipBox").classList.toggle("on",pipOn);
+  if(pipOn){stageHome=$("#stageInner").parentNode;$("#pipInner").appendChild($("#stageInner"))}
+  else if(stageHome){stageHome.appendChild($("#stageInner"))}
+};
+$("#recBtn").onclick=()=>{
+  if(recorder&&recorder.state==="recording"){recorder.stop();return}
+  if(!camStream){alert("先にカメラを開始してね");return}
+  if(typeof MediaRecorder==="undefined"){alert("このブラウザは録画(MediaRecorder)に未対応です。iPhoneは最新のSafariで試してね");return}
+  recChunks=[];recorder=new MediaRecorder(camStream);
+  recorder.ondataavailable=e=>{if(e.data.size)recChunks.push(e.data)};
+  recorder.onstop=()=>{
+    clearInterval(recTimer);$("#recDot").classList.remove("on");$("#recBtn").textContent="● 録画開始";
+    const blob=new Blob(recChunks,{type:recorder.mimeType||"video/webm"});const url=URL.createObjectURL(blob);
+    $("#recVideo").src=url;const dl=$("#recDownload");dl.href=url;dl.download="otagei-practice."+(blob.type.includes("mp4")?"mp4":"webm");$("#recResult").style.display="block";
+  };
+  recorder.start();recStart=Date.now();$("#recDot").classList.add("on");$("#recBtn").textContent="■ 録画停止";
+  recTimer=setInterval(()=>{$("#recTime").textContent=fmt((Date.now()-recStart)/1000)},500);
+};
+
+// ---- Auto history (1回使ったら自動保存) ----
+function upsertHistory(url){
+  const now=Date.now();
+  const song=$("#songInput").value.trim(),group=$("#groupInput").value.trim(),memo=$("#memoInput").value.trim();
+  const found=library.find(x=>x.url===url);
+  if(found){
+    found.lastUsed=now;found.useCount=(found.useCount||1)+1;
+    if(song)found.song=song; if(group)found.group=group; if(memo)found.memo=memo;
+    library=[found,...library.filter(x=>x.url!==url)];
+  }else{
+    library.unshift({id:now,url,song,group,memo,lastUsed:now,useCount:1,auto:true});
+  }
+  // keep last 200, personal device only
+  library=library.slice(0,200);
+  saveLib();renderLibrary();
+}
+function touchHistory(url){
+  const found=library.find(x=>x.url===url);if(!found)return;
+  found.lastUsed=Date.now();found.useCount=(found.useCount||1)+1;
+  library=[found,...library.filter(x=>x.url!==url)];saveLib();renderLibrary();
+}
+
+// ---- Library ----
+function saveLib(){localStorage.setItem(LIB_KEY,JSON.stringify(library))}
+function renderLibrary(){
+  const q=($("#filterInput").value||"").toLowerCase();const list=$("#libraryList");list.innerHTML="";
+  const items=library.filter(it=>!q||(it.song+" "+it.group+" "+it.memo+" "+it.url).toLowerCase().includes(q));
+  if(!items.length){list.innerHTML='<p class="note">まだ履歴なし。動画を1回読み込むと、ここに自動で残ります。</p>';return}
+  items.forEach(it=>{
+    const div=document.createElement("div");div.className="item";
+    const type=parseYouTube(it.url)?"yt":parseX(it.url)?"x":"file";
+    const when=it.lastUsed?new Date(it.lastUsed).toLocaleDateString("ja-JP")+" "+new Date(it.lastUsed).toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"}):"";
+    div.innerHTML=`<div class="meta"><div class="t"><span class="tag ${type}">${type==="yt"?"YouTube":type==="x"?"X":"FILE"}</span> ${it.song||"(曲名なし)"}</div><div class="s">${it.group||""} ${it.memo?"・ "+it.memo:""}</div><div class="s">${it.url}</div><div class="s">${when?"🕘 "+when:""} ${it.useCount?"・ "+it.useCount+"回":""} ${it.auto?"・ 自動保存":""}</div></div>`;
+    const go=document.createElement("button");go.className="small primary";go.textContent="開く";go.onclick=()=>{$("#urlInput").value=it.url;$("#songInput").value=it.song||"";$("#groupInput").value=it.group||"";$("#memoInput").value=it.memo||"";loadUrl(it.url);window.scrollTo({top:0,behavior:"smooth"})};
+    const del=document.createElement("button");del.className="small danger";del.textContent="削除";del.onclick=()=>{if(confirm("この1件を削除しますか？")){library=library.filter(x=>x.id!==it.id);saveLib();renderLibrary()}};
+    div.appendChild(go);div.appendChild(del);list.appendChild(div);
+  });
+}
+$("#filterInput").oninput=renderLibrary;
+$("#saveBtn").onclick=()=>{
+  const url=$("#urlInput").value.trim()||currentUrl;
+  if(!url&&mode!=="file"){alert("先に動画を読み込んでね");return}
+  if(url){
+    // 履歴は自動保存済み。ここは曲名/グループ/メモの反映だけ
+    const found=library.find(x=>x.url===url);
+    if(found){found.song=$("#songInput").value.trim();found.group=$("#groupInput").value.trim();found.memo=$("#memoInput").value.trim();saveLib();renderLibrary();alert("履歴の情報を更新したよ（端末内のみ）")}
+    else{upsertHistory(url);alert("履歴に保存したよ（端末内のみ）")}
+  }
+};
+renderLibrary();renderMarkers();
+</script>
+</body>
+</html>
