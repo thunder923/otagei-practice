@@ -65,6 +65,15 @@ a{color:var(--acc)}
 details summary{cursor:pointer;font-weight:700;font-size:14px}
 .kbd{font-size:11px;background:#000;border:1px solid var(--line);border-radius:5px;padding:1px 5px}
 footer{color:var(--sub);font-size:11px;text-align:center;padding:0 16px 24px;line-height:1.7}
+footer a{color:inherit;text-decoration:underline}
+.upm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px}
+.upm-overlay.open{display:flex}
+.upm-box{background:#fff;color:#1a1a1a;border-radius:14px;max-width:640px;width:100%;max-height:85vh;overflow:auto;padding:20px;font-size:14px;line-height:1.7;text-align:left}
+.upm-box h2{font-size:16px;margin:18px 0 6px}
+.upm-box h2:first-of-type{margin-top:2px}
+.upm-box p{font-size:13.5px;margin:6px 0}
+.upm-box ul,.upm-box ol{padding-left:20px;margin:6px 0;font-size:13.5px}
+.upm-close{float:right;background:#111;color:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -210,7 +219,7 @@ footer{color:var(--sub);font-size:11px;text-align:center;padding:0 16px 24px;lin
   </details>
 </section>
 </main>
-<footer>地下芸練習・自分専用 ・ 公開/共有機能なし ・ データはすべてこの端末の localStorage のみ ・ YouTubeは公式IFrame API、Xは公式埋め込み(widgets.js)を使用</footer>
+<footer>地下芸練習・自分専用 ・ 公開/共有機能なし ・ データはすべてこの端末の localStorage のみ ・ YouTubeは公式IFrame API、Xは公式埋め込み(widgets.js)を使用<br><a href="#" id="upmLink">使い方・プライバシーポリシー</a></footer>
 <script src="https://www.youtube.com/iframe_api"></script>
 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 <script>
@@ -419,6 +428,26 @@ $("#saveBtn").onclick=()=>{
   }
 };
 renderLibrary();renderMarkers();
+</script>
+<div class="upm-overlay" id="upmOverlay"><div class="upm-box">
+  <button class="upm-close" id="upmClose" type="button">閉じる</button>
+  <h2>使い方</h2>
+  <ol>
+    <li>YouTube / X のポストURLを貼って「読み込む」を押します（手持ちの動画ファイルも選べます）。読み込んだ動画は履歴に自動で保存され、次回からはタップだけで開けます。</li>
+    <li>YouTube / 手持ちファイルは、スロー再生（0.25〜1.5倍）・ABループ・シーク・コマ送り・区間マーカーが使えます。BPMを指定するとカウント表示も出せます。</li>
+    <li>X動画は公式埋め込みの仕様上、アプリ側からスローやループなどの再生操作はできません（左右反転・ズームは効きます）。</li>
+    <li>カメラを鏡表示し、お手本を右下のPiPに重ねて録画・見比べができます（カメラは HTTPS で開いたときのみブラウザが許可します）。</li>
+  </ol>
+  <h2>プライバシーポリシー</h2>
+  <ul>
+    <li>履歴・ライブラリ・区間マーカーは、この端末のブラウザ内（localStorage）にだけ保存されます（履歴は直近200件まで）。外部のサーバーへ送信されることはありません。</li>
+    <li>動画の読み込みには、YouTube公式のIFrame APIとX公式の埋め込み（widgets.js）を使います。動画視聴に伴う通信は、各公式サービスの仕様によります。</li>
+    <li>カメラ映像は端末内でのみ表示・録画され、外部へ送信されることはありません。</li>
+    <li>このアプリ独自のアクセス解析・広告はありません。</li>
+  </ul>
+</div></div>
+<script>
+(function(){var o=document.getElementById('upmOverlay');var l=document.getElementById('upmLink');var c=document.getElementById('upmClose');if(l)l.addEventListener('click',function(e){e.preventDefault();o.classList.add('open')});if(c)c.addEventListener('click',function(){o.classList.remove('open')});if(o)o.addEventListener('click',function(e){if(e.target===o)o.classList.remove('open')})})();
 </script>
 </body>
 </html>
